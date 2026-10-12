@@ -1,0 +1,15 @@
+# Python
+ocr-backend/venv/
+ocr-backend/__pycache__/
+ocr-backend/uploads/*
+!ocr-backend/uploads/.gitkeep
+*.pyc
+
+# Node.js
+ocr-frontend/node_modules/
+ocr-frontend/.next/
+ocr-frontend/build/
+
+# Environment / System
+.vscode/
+.DS_Store

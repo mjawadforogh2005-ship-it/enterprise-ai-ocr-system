@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+easyocr
+jiwer
+sqlalchemy
+psycopg2-binary
+Pillow
+numpy
