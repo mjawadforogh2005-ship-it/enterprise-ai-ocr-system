@@ -56,7 +56,6 @@ def evaluate_test_set():
         
         hypothesis_text = sort_and_merge_lines(results)
 
-        # در jiwer ترتیب درست به این صورت است: jiwer.cer(reference, hypothesis)
         cer = jiwer.cer(reference_text, hypothesis_text)
         wer = jiwer.wer(reference_text, hypothesis_text)
 

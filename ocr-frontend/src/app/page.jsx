@@ -4,12 +4,9 @@ import React, { useState, useEffect } from "react";
 import { Upload, FileText, CheckCircle, RefreshCw, Download } from "lucide-react";
 
 export default function Home() {
-  // ۱. تمام متغیرهای useState باید دقیقا همین‌جا (داخل تابع) باشند
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [imageId, setImageId] = useState("");
-  
-  // نگهداری جداگانه متن اولیه برای CER واقعی و متن قابل ویرایش برای کاربر
   const [rawOcrText, setRawOcrText] = useState("");
   const [editableText, setEditableText] = useState("");
   
@@ -208,8 +205,8 @@ export default function Home() {
               )}
             </div>
 
-            <textarea
-              dir="rtl"
+           <textarea
+              dir="auto"
               value={editableText}
               onChange={(e) => setEditableText(e.target.value)}
               placeholder="متن استخراج‌شده در اینجا نمایش داده می‌شود..."
