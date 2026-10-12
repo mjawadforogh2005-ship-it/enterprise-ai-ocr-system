@@ -1,35 +1,30 @@
 import os
-import urllib.parse
-from sqlalchemy import create_engine, Column, String, Float, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 import datetime
+import urllib.parse
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-# رمز عبور شما به همراه کاراکتر خاص #
-raw_password = "2026#"
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = urllib.parse.quote_plus(os.getenv("DB_PASSWORD", ""))
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "ocr_db")
 
-# انکود کردن پسورد جهت جلوگیری از خطای parse آدرس در SQLAlchemy
-encoded_password = urllib.parse.quote_plus(raw_password)
+DB_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# ساخت آدرس اتصال دقیق به دیتابیس ocr_db
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
-    f"postgresql://postgres:{encoded_password}@localhost:5432/ocr_db"
-)
-
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DB_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 class OCRFeedbackDB(Base):
     __tablename__ = "ocr_feedback"
 
-    id = Column(String, primary_key=True, index=True)
-    image_path = Column(String, nullable=False)
-    original_text = Column(String, nullable=True)
-    corrected_text = Column(String, nullable=True)
-    cer_score = Column(Float, default=0.0)
-    wer_score = Column(Float, default=0.0)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    id = Column(Integer, primary_key=True, index=True)
+    image_id = Column(String, index=True)
+    original_text = Column(String)
+    corrected_text = Column(String)
+    cer = Column(Float)
+    wer = Column(Float)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
 
 Base.metadata.create_all(bind=engine)
