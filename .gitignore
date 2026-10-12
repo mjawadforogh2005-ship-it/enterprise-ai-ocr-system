@@ -13,3 +13,5 @@ ocr-frontend/build/
 # Environment / System
 .vscode/
 .DS_Store
+.env
+ocr-backend/.env
