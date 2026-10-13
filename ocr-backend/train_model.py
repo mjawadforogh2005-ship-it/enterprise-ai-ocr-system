@@ -62,7 +62,6 @@ class MiniCRNN(nn.Module):
             nn.Conv2d(1, 32, 3, 1, 1), nn.ReLU(True), nn.MaxPool2d(2, 2),
             nn.Conv2d(32, 64, 3, 1, 1), nn.ReLU(True), nn.MaxPool2d(2, 2)
         )
-        # لایه یادگیری توالی متن
         self.rnn = nn.LSTM(64 * 8, 128, bidirectional=True, batch_first=True)
         self.fc = nn.Linear(256, num_classes)
 
@@ -73,22 +72,20 @@ class MiniCRNN(nn.Module):
         rnn_out, _ = self.rnn(conv)
         return self.fc(rnn_out).log_softmax(2)
 
-# 4. اجرای فرآیند آموزش (Training Loop)
 def run_training():
     print("=" * 50)
-    print("🚀 Starting Actual PyTorch Fine-Tuning Process (Requirement 7)")
+    print(" Starting Actual PyTorch Fine-Tuning Process (Requirement 7)")
     print("=" * 50)
     
     dataset = OCRDataset()
     if len(dataset) == 0:
-        print("❌ No training data found! Please run gen_data.py first.")
+        print(" No training data found! Please run gen_data.py first.")
         return
         
     dataloader = DataLoader(dataset, batch_size=2, shuffle=True, collate_fn=collate_fn)
     model = MiniCRNN(num_classes)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     
-    # الگوریتم استاندارد خطایابی مدل‌های متنی
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
     
     epochs = 3
@@ -102,11 +99,11 @@ def run_training():
             outputs = model(images)
             
             input_lengths = torch.full(size=(outputs.size(0),), fill_value=outputs.size(1), dtype=torch.long)
-            outputs = outputs.permute(1, 0, 2) # (T, N, C) for CTCLoss
+            outputs = outputs.permute(1, 0, 2) 
             
             loss = criterion(outputs, targets, input_lengths, target_lengths)
             
-            # Backpropagation (آموزش واقعی)
+            # Backpropagation ( آموزش واقعی  سیستم)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
@@ -114,7 +111,7 @@ def run_training():
         print(f"🔄 Epoch [{epoch+1}/{epochs}] | CTC Loss: {total_loss/len(dataloader):.4f}")
         
     torch.save(model.state_dict(), os.path.join(MODEL_OUTPUT_DIR, "crnn_finetuned.pth"))
-    print("\n✅ PyTorch Backpropagation Successful!")
+    print("\n PyTorch Backpropagation Successful!")
     print("💾 Model weights updated and saved to: retrained_model/crnn_finetuned.pth")
     print("=" * 50)
 

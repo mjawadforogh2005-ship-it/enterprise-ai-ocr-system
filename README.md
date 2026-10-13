@@ -1,27 +1,41 @@
-# 🚀 Enterprise AI-Powered Offline OCR System (Farsi/English)
+# سیستم هوشمند و آفلاین OCR سازمانی
+**(Enterprise Offline OCR System)**
 
-An enterprise-grade, highly performant, completely offline Optical Character Recognition (OCR) system designed for mixed Farsi/English documents and identification cards.
+این پروژه یک سیستم کاملاً آفلاین برای تشخیص متون تصویری است.
+زبان‌های پشتیبانی شده شامل فارسی و انگلیسی می‌باشد.
+معماری پروژه به صورت کلاینت-سرور پیاده‌سازی شده است.
+این سیستم دارای چرخه بازخورد کاربر، ارزیابی خطا و قابلیت آموزش مجدد مدل می‌باشد.
 
-## 🌟 Key Features
-- **100% Offline & CPU Optimized:** Runs smoothly on CPU (4GB-8GB RAM) without requiring a GPU.
-- **Ultra-Fast Processing:** Optimized image resizing (`max_dimension=600`) and canvas configuration for multi-second execution.
-- **Smart Box Sorting:** Custom geometric algorithm (`sort_and_merge_lines`) for strict right-to-left line ordering and Farsi text structure preservation.
-- **Interactive Feedback Loop:** Enables users to edit extracted text, saving real corrections in PostgreSQL with real-time **CER** and **WER** metrics calculation.
+---
 
-## 🛠️ Architecture & Tech Stack
-- **Backend:** Python 3.12, FastAPI, EasyOCR, SQLAlchemy, PostgreSQL, JiWER, OpenVINO
-- **Frontend:** Next.js 14, React, Lucide Icons, Axios
+## ویژگی‌های کلیدی
 
-## 🚀 One-Click Execution Guide
+* پردازش بدون نیاز به اینترنت با استفاده از پایتون و EasyOCR
+* تشخیص هوشمند جهت متن برای کلمات ترکیبی فارسی و انگلیسی
+* ذخیره اصلاحات کاربران در پایگاه داده PostgreSQL
+* محاسبه دقیق خطای سیستم با معیارهای CER و WER
+* آموزش مجدد لایه‌های شبکه عصبی با تابع CTC Loss
 
-### Windows
-1. Double-click **`run_win.bat`** in the root directory.
-2. Open your browser at `http://localhost:3000`.
+---
 
-### Linux
-1. Make the script executable: `chmod +x run_linux.sh`
-2. Run the launcher: `./run_linux.sh`
-3. Open your browser at `http://localhost:3000`.
+## تکنولوژی‌های استفاده شده
+* بخش بک‌اند: پایتون، فست‌اِی‌پی‌آی و پای‌تورچ
+* بخش فرانت‌اند: ری‌اکت، نکست‌جی‌اس و تیلویند
+* پایگاه‌داده: پستگرس‌کیوال
 
-## 🗄️ Database Setup (PostgreSQL)
-Ensure PostgreSQL is running and database `ocr_db` is created. Update `DATABASE_URL` in `ocr-backend/database.py` with your database credentials.
+## راهنمای نصب و راه‌اندازی
+
+برای اجرای این پروژه، مراحل زیر را به ترتیب دنبال کنید.
+1. وارد پوشه اصلی EBA شوید.
+2. فایل Run_OCR.bat را پیدا کنید (آیکون آن معمولاً شبیه یک پنجره با چرخ‌دنده است).
+3. روی آن دو بار کلیک چپ (دابل‌کلیک) کنید.
+4. حالا صبر کنید تا کامل بک ایند و فرانت ایند ران شود و بعد لوکال هاست 3000 را روی بروزر تان باز کنید
+### ۱. تنظیمات بک‌اند
+ابتدا یک ترمینال باز کنید و وارد پوشه بک‌اند شوید:
+
+```powershell
+cd ocr-backend
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+

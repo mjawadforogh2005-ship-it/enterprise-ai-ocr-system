@@ -12,8 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from database import SessionLocal, OCRFeedbackDB
-from ocr_utils import sort_and_merge_lines  # ایمپورت اصلاح شد
-
+from ocr_utils import sort_and_merge_lines  
 app = FastAPI(title="Enterprise Offline OCR System")
 
 app.add_middleware(
@@ -38,7 +37,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
 
 class FeedbackRequest(BaseModel):
     image_id: str
