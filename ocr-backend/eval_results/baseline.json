@@ -1,0 +1,23 @@
+{
+  "tag": "baseline",
+  "samples": 3,
+  "avg_cer": 0.087,
+  "avg_wer": 0.3738,
+  "details": [
+    {
+      "image": "pic1_0001.jpg",
+      "cer": 0.0,
+      "wer": 0.0
+    },
+    {
+      "image": "pic1_0002.jpg",
+      "cer": 0.128,
+      "wer": 0.5303
+    },
+    {
+      "image": "pic1_0003.jpeg",
+      "cer": 0.1329,
+      "wer": 0.5912
+    }
+  ]
+}

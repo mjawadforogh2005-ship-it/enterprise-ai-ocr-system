@@ -3,6 +3,7 @@ import uuid
 import io
 import json
 import numpy as np
+import traceback
 from PIL import Image
 import easyocr
 import jiwer
@@ -11,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from database import SessionLocal, OCRFeedbackDB
-from ocr_utils import sort_and_merge_lines
+from ocr_utils import sort_and_merge_lines  # ایمپورت اصلاح شد
 
 app = FastAPI(title="Enterprise Offline OCR System")
 
@@ -59,7 +60,9 @@ async def process_ocr(file: UploadFile = File(...)):
 
         max_dim = 1000
         if max(image.size) > max_dim:
-            image.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)
+            # مدیریت هوشمند تغییر اندازه برای سازگاری با تمام نسخه‌های Pillow
+            resample_filter = getattr(getattr(Image, 'Resampling', Image), 'LANCZOS', Image.LANCZOS)
+            image.thumbnail((max_dim, max_dim), resample_filter)
 
         img_np = np.array(image)
         results = reader.readtext(
@@ -76,6 +79,9 @@ async def process_ocr(file: UploadFile = File(...)):
 
         return {"image_id": image_id, "extracted_text": extracted_text}
     except Exception as e:
+        print("\n=== ERROR IN /api/ocr ===")
+        traceback.print_exc()
+        print("=========================\n")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -117,6 +123,9 @@ async def save_feedback(data: FeedbackRequest, db: Session = Depends(get_db)):
         return {"status": "success", "cer": cer, "wer": wer}
     except Exception as e:
         db.rollback()
+        print("\n=== ERROR IN /api/feedback ===")
+        traceback.print_exc()
+        print("=============================\n")
         raise HTTPException(status_code=500, detail=str(e))
 
 

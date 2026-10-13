@@ -1,0 +1,3 @@
+دانشگاه بانک سیستم کارت تصویر machine مدل
+name damage security
+user for building damage image card for access repair

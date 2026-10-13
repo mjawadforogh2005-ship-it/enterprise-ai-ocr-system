@@ -1,0 +1,6 @@
+language province system father official 86817
+user report energy
+چاپ دانشگاه خروج
+ملی ministry اطلاعات ولایت امنیت تاریخ
+مدل که فایل صفحه کارت آموزش این اطلاعات گفتگو
+زمان گفتگو برای چاپ وزارت این شبکه در داده

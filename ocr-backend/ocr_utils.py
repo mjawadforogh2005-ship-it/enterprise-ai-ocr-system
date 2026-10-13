@@ -1,15 +1,15 @@
 import re
+import numpy as np
+from PIL import Image
 
 _RTL = re.compile(r"[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]")
 _LTR = re.compile(r"[A-Za-z]")
-
 
 def _is_rtl_line(texts):
     joined = " ".join(texts)
     rtl = len(_RTL.findall(joined))
     ltr = len(_LTR.findall(joined))
-    return rtl > ltr
-
+    return rtl >= ltr
 
 def sort_and_merge_lines(results, overlap_ratio=0.5):
     if not results:
@@ -55,3 +55,17 @@ def sort_and_merge_lines(results, overlap_ratio=0.5):
         output.append(" ".join(b["text"] for b in line))
 
     return "\n".join(output)
+
+def ocr_image(reader, image, max_dim=1000):
+    image = image.convert("RGB")
+    if max(image.size) > max_dim:
+        resample_filter = getattr(getattr(Image, 'Resampling', Image), 'LANCZOS', Image.LANCZOS)
+        image.thumbnail((max_dim, max_dim), resample_filter)
+    results = reader.readtext(
+        np.array(image),
+        decoder="greedy",
+        detail=1,
+        canvas_size=max_dim,
+        mag_ratio=1.0,
+    )
+    return sort_and_merge_lines(results)

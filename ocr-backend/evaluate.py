@@ -1,83 +1,72 @@
 import os
+import sys
 import json
 import easyocr
 import jiwer
 from PIL import Image
-import numpy as np
-from main import sort_and_merge_lines
+from ocr_utils import ocr_image
 
-DATASET_DIR = "dataset_feedback"
-UPLOAD_DIR = "uploads"
+IMG_DIR = os.path.join("test_set", "images")
+LBL_DIR = os.path.join("test_set", "labels")
+OUT_DIR = "eval_results"
+EXTS = (".jpg", ".jpeg", ".png")
 
-def evaluate_test_set():
-    reader = easyocr.Reader(['fa', 'en'], gpu=False)
-    
-    if not os.path.exists(DATASET_DIR):
-        print("پوشه داده‌های تست یافت نشد.")
-        return
 
-    json_files = [f for f in os.listdir(DATASET_DIR) if f.endswith('.json')]
-    
-    if not json_files:
-        print("هیچ نمونه تستی یافت نشد.")
-        return
+def norm(text):
+    return " ".join(text.split())
 
-    total_cer = 0.0
-    total_wer = 0.0
-    count = 0
 
-    print("=" * 60)
-    print("ارزیابی واقعی عملکرد سیستم OCR روی نمونه‌های تست")
-    print("=" * 60)
-
-    for file_name in json_files:
-        with open(os.path.join(DATASET_DIR, file_name), 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
-        image_path = os.path.join(UPLOAD_DIR, f"{data['image_id']}.jpg")
-        reference_text = data['corrected_text']
-
-        if not os.path.exists(image_path) or not reference_text.strip():
+def run(tag):
+    reader = easyocr.Reader(["fa", "en"], gpu=False)
+    rows = []
+    for name in sorted(os.listdir(IMG_DIR)):
+        stem, ext = os.path.splitext(name)
+        if ext.lower() not in EXTS:
             continue
+        label_path = os.path.join(LBL_DIR, stem + ".txt")
+        if not os.path.exists(label_path):
+            continue
+        with open(label_path, encoding="utf-8") as f:
+            reference = norm(f.read())
+        if not reference:
+            continue
+        hypothesis = norm(ocr_image(reader, Image.open(os.path.join(IMG_DIR, name))))
+        cer = float(jiwer.cer(reference, hypothesis))
+        wer = float(jiwer.wer(reference, hypothesis))
+        rows.append({"image": name, "cer": round(cer, 4), "wer": round(wer, 4)})
+        print(f"{name}: CER={cer:.4f} WER={wer:.4f}")
 
-        image = Image.open(image_path).convert('RGB')
-        max_dim = 1000
-        if max(image.size) > max_dim:
-            image.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)
-        img_np = np.array(image)
+    if not rows:
+        print("هیچ نمونه‌ای پیدا نشد")
+        return
 
-        results = reader.readtext(
-            img_np, 
-            decoder='greedy', 
-            detail=1, 
-            canvas_size=1000, 
-            mag_ratio=1.0
-        )
-        
-        hypothesis_text = sort_and_merge_lines(results)
+    summary = {
+        "tag": tag,
+        "samples": len(rows),
+        "avg_cer": round(sum(r["cer"] for r in rows) / len(rows), 4),
+        "avg_wer": round(sum(r["wer"] for r in rows) / len(rows), 4),
+        "details": rows,
+    }
+    os.makedirs(OUT_DIR, exist_ok=True)
+    with open(os.path.join(OUT_DIR, f"{tag}.json"), "w", encoding="utf-8") as f:
+        json.dump(summary, f, ensure_ascii=False, indent=2)
+    print(f"\n{tag}: samples={summary['samples']} CER={summary['avg_cer']} WER={summary['avg_wer']}")
 
-        cer = jiwer.cer(reference_text, hypothesis_text)
-        wer = jiwer.wer(reference_text, hypothesis_text)
 
-        total_cer += cer
-        total_wer += wer
-        count += 1
+def compare(tag_a, tag_b):
+    with open(os.path.join(OUT_DIR, f"{tag_a}.json"), encoding="utf-8") as f:
+        a = json.load(f)
+    with open(os.path.join(OUT_DIR, f"{tag_b}.json"), encoding="utf-8") as f:
+        b = json.load(f)
+    print(f"{'':10}{tag_a:>12}{tag_b:>12}")
+    print(f"{'CER':10}{a['avg_cer']:>12}{b['avg_cer']:>12}")
+    print(f"{'WER':10}{a['avg_wer']:>12}{b['avg_wer']:>12}")
 
-        print(f"شناسه تصویر: {data['image_id']}")
-        print(f"CER: {round(cer, 4)} | WER: {round(wer, 4)}")
-        print("-" * 60)
-
-    if count > 0:
-        avg_cer = round(total_cer / count, 4)
-        avg_wer = round(total_wer / count, 4)
-        accuracy = max(0.0, round((1.0 - avg_cer) * 100, 2))
-        
-        print(f"\n📊 نتایج نهایی ارزیابی:")
-        print(f"تعداد نمونه‌ها: {count}")
-        print(f"میانگین CER: {avg_cer}")
-        print(f"میانگین WER: {avg_wer}")
-        print(f"دقت تخمینی: {accuracy}%")
-    print("=" * 60)
 
 if __name__ == "__main__":
-    evaluate_test_set()
+    if len(sys.argv) >= 4 and sys.argv[1] == "compare":
+        compare(sys.argv[2], sys.argv[3])
+    elif len(sys.argv) >= 2:
+        run(sys.argv[1])
+    else:
+        print("python evaluate.py <tag>  یا  python evaluate.py compare <tagA> <tagB>")
