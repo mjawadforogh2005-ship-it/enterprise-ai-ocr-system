@@ -1,0 +1,7 @@
+{
+  "image_id": "cdaf587d-231b-4df9-8b3d-1dc7bb5f5a73",
+  "original_text": "They laugn at me\nbecause Im different;\n+ laugh at them\nbecause theyre\nall the same! Kurt Cobain\nآن ها به من خندیدند : چون\nمن متفاوت بودم !\nممه مثل من به آن ها خندیدم جون\nهم بودند ! - »کرت کب «",
+  "corrected_text": "They laugا at me\nbecause I'm different;\nI laugh at them\nbecause they're\nall the same! Kurt Cobain\nآن ها به من خندیدند : چون\nمن متفاوت بودم!\nمن به آن ها خندیدم چون\nهمه مثل هم بودند ! - »کرت کین «",
+  "cer": 0.1237,
+  "wer": 0.3429
+}

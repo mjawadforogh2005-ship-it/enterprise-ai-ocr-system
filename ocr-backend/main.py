@@ -1,7 +1,7 @@
 import os
-import uuid
 import io
 import json
+import hashlib
 import numpy as np
 import traceback
 from PIL import Image
@@ -13,11 +13,12 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from database import SessionLocal, OCRFeedbackDB
 from ocr_utils import sort_and_merge_lines  
+
 app = FastAPI(title="Enterprise Offline OCR System")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,7 +30,6 @@ UPLOAD_DIR = "uploads"
 DATASET_DIR = "dataset_feedback"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(DATASET_DIR, exist_ok=True)
-
 
 def get_db():
     db = SessionLocal()
@@ -43,12 +43,15 @@ class FeedbackRequest(BaseModel):
     original_text: str
     corrected_text: str
 
-
 @app.post("/api/ocr")
-async def process_ocr(file: UploadFile = File(...)):
+async def process_ocr(file: UploadFile = File(...), db: Session = Depends(get_db)):
     try:
-        image_id = str(uuid.uuid4())
         file_bytes = await file.read()
+        image_id = hashlib.md5(file_bytes).hexdigest()
+
+        cached_feedback = db.query(OCRFeedbackDB).filter(OCRFeedbackDB.image_id == image_id).order_by(OCRFeedbackDB.id.desc()).first()
+        if cached_feedback and cached_feedback.corrected_text:
+            return {"image_id": image_id, "extracted_text": cached_feedback.corrected_text}
 
         file_path = os.path.join(UPLOAD_DIR, f"{image_id}.jpg")
         with open(file_path, "wb") as f:
@@ -58,7 +61,6 @@ async def process_ocr(file: UploadFile = File(...)):
 
         max_dim = 1000
         if max(image.size) > max_dim:
-            # مدیریت هوشمند تغییر اندازه برای سازگاری با تمام نسخه‌های Pillow
             resample_filter = getattr(getattr(Image, 'Resampling', Image), 'LANCZOS', Image.LANCZOS)
             image.thumbnail((max_dim, max_dim), resample_filter)
 
@@ -81,8 +83,7 @@ async def process_ocr(file: UploadFile = File(...)):
         traceback.print_exc()
         print("=========================\n")
         raise HTTPException(status_code=500, detail=str(e))
-
-
+    
 @app.post("/api/feedback")
 async def save_feedback(data: FeedbackRequest, db: Session = Depends(get_db)):
     try:
@@ -126,12 +127,10 @@ async def save_feedback(data: FeedbackRequest, db: Session = Depends(get_db)):
         print("=============================\n")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/metrics")
 async def get_metrics(db: Session = Depends(get_db)):
     feedbacks = db.query(OCRFeedbackDB).all()
     total_samples = len(feedbacks)
-
     if total_samples == 0:
         return {"total_samples": 0, "avg_cer": 0.0, "accuracy_percentage": 100.0}
 
@@ -144,8 +143,6 @@ async def get_metrics(db: Session = Depends(get_db)):
         "accuracy_percentage": accuracy,
     }
 
-
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="127.0.0.1", port=8000)
