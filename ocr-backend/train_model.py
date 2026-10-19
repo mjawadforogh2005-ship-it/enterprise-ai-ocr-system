@@ -12,12 +12,9 @@ TRAIN_DATA_DIR = "train_data"
 MODEL_OUTPUT_DIR = "retrained_model"
 os.makedirs(MODEL_OUTPUT_DIR, exist_ok=True)
 
-#  تعریف حروف الفبا (انگلیسی + فارسی)
 ALPHABET = " 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی۰۱۲۳۴۵۶۷۸۹"
 char2id = {c: i+1 for i, c in enumerate(ALPHABET)} # 0 is reserved for CTC blank
 num_classes = len(ALPHABET) + 1
-
-#  کلاس لودر تصاویر و تبدیل به تنسور PyTorch
 class OCRDataset(Dataset):
     def __init__(self):
         self.samples = []
@@ -31,7 +28,6 @@ class OCRDataset(Dataset):
                         if os.path.exists(img_path):
                             self.samples.append((img_path, parts[1]))
         
-        # پیش‌ پردازش استاندارد یادگیری عمیق
         self.transform = transforms.Compose([
             transforms.Resize((32, 128)),
             transforms.ToTensor(),
@@ -54,7 +50,6 @@ def collate_fn(batch):
     targets = torch.cat(targets)
     return images, targets, target_lengths
 
-# معماری شبکه عصبی (CNN + RNN)
 class MiniCRNN(nn.Module):
     def __init__(self, num_classes):
         super(MiniCRNN, self).__init__()
@@ -103,7 +98,6 @@ def run_training():
             
             loss = criterion(outputs, targets, input_lengths, target_lengths)
             
-            # Backpropagation ( آموزش واقعی  سیستم)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()

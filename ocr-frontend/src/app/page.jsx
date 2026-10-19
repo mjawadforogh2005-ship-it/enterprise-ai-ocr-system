@@ -124,7 +124,6 @@ export default function Home() {
         </p>
       </header>
 
-      {/* Metric Cards */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
           <span className="text-xs text-slate-400">تعداد نمونه‌های Feedback</span>
@@ -146,9 +145,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main Workspace */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Upload Box */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-4 text-sky-400 font-semibold">
@@ -187,7 +184,6 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Result & Feedback Box */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
